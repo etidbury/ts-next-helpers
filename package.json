@@ -1,5 +1,5 @@
 {
-  "name": "ts-next-helpers",
+  "name": "@etidbury/ts-next-helpers",
   "version": "0.0.1",
   "description": "Helper functions for ts-next",
   "main": "index.js",
