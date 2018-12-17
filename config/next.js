@@ -19,7 +19,7 @@ const isProd = process.env.NODE_ENV === 'production'
 const withTypescript = require('@zeit/next-typescript')
 const withSass = require('@zeit/next-sass')
 const withCss = require('@zeit/next-css')
-const nextBuildId = require('next-build-id')
+// const nextBuildId = require('next-build-id')
 // fix: prevents error when .css files are required by node
 if (typeof require !== 'undefined') {
     require.extensions['.css'] = file => {}
@@ -28,10 +28,10 @@ if (typeof require !== 'undefined') {
 const nextConfig = withCss(
     withSass(
         withTypescript({
-            generateBuildId: async () => {
-                const fromGit = await nextBuildId({ dir: process.cwd() })
-                return fromGit.id
-            },
+            // generateBuildId: async () => {
+            //     const fromGit = await nextBuildId({ dir: process.cwd() })
+            //     return fromGit.id
+            // },
             distDir:
                 '.build.next' +
                 (isProd
