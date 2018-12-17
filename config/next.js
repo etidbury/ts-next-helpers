@@ -29,7 +29,7 @@ const nextConfig = withCss(
     withSass(
         withTypescript({
             generateBuildId: async () => {
-                const fromGit = await nextBuildId({ dir: __dirname })
+                const fromGit = await nextBuildId({ dir: process.cwd() })
                 return fromGit.id
             },
             distDir:

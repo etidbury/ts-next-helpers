@@ -1,10 +1,14 @@
 #!/bin/bash -exo pipefail
 
-echo "Deployment v0.1.0"
+echo "Deployment v0.1.1"
 
 export GITHUB_REPO_URL="https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 
-if [ "${CIRCLE_BRANCH}" == "staging" ]; then
+if [ "${CIRCLE_BRANCH}" == "development" ]; then
+
+    echo "Deployment for development not yet implemented..."
+
+elif [ "${CIRCLE_BRANCH}" == "staging" ]; then
 
     echo "Deployment for staging not yet implemented..."
 
@@ -66,6 +70,50 @@ else
 
     # delete tmp branch
     git branch -d ${TMP_DEV_BRANCH}
+
+fi
+
+#### Deploy via Zeit Now
+if [ -z "${NOW_ALIAS}" ] || [ -z "${NOW_TOKEN}" ] || [ -z "${NOW_TEAM}" ]; then
+    echo 'Skipping Zeit Now Deploy ( NOW_ALIAS, NOW_TOKEN, NOW_TEAM not set )'        
+else
+
+    set -exo pipefail
+
+    
+    # Save all env vars from shell environment to .env file
+    printenv | awk '!/PATH=/ && !/HOME=/ && !/HOST=/ && !/CWD=/ && !/PWD=/' > .env
+
+    # re-add deleted env vars
+    if [ -z "${MYSQL_HOST}" ];then
+        echo "MYSQL_HOST=$MYSQL_HOST" >> .env
+    fi
+
+    # Ensure host is set for Zeit
+    echo "HOST=0.0.0.0" >> .env
+
+    # Debug env vars
+    cat .env
+
+    # Debug files and permissions
+    ls -la
+
+    echo "Zeit Now Deploying '${NOW_ALIAS}'..."
+
+    export NOW_TEMP_URL=$(now --token "${NOW_TOKEN}" --dotenv .env --team "${NOW_TEAM}")
+
+    echo "Zeit Now Aliasing '${NOW_TEMP_URL}' to '${NOW_ALIAS}'"
+
+    now alias "${NOW_TEMP_URL}" "${NOW_ALIAS}" --token "${NOW_TOKEN}" --team "${NOW_TEAM}"
+
+    if [ -z "${NOW_SCALE}" ]; then
+        echo "Skipping scale command (NOW_SCALE not set)"
+    else
+        echo "Scaling ${NOW_ALIAS} [Min: 1, Max: ${NOW_SCALE}]"
+        now scale "${NOW_ALIAS}" "1" "${NOW_SCALE}" --token "${NOW_TOKEN}" --team "${NOW_TEAM}"
+    fi
+
+    curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"Deployed ${CIRCLE_PROJECT_REPONAME} at https://${NOW_ALIAS} (${NOW_TEMP_URL})\"}" https://hooks.slack.com/services/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
 
 fi
 
