@@ -1,6 +1,8 @@
 
 // next.config.js
 const path = require('path')
+const fs = require('fs')
+
 require('dotenv-safe').config({
     path: path.join(process.cwd(), '.env'),
     safe: true,
@@ -20,19 +22,38 @@ const withTypescript = require('@zeit/next-typescript')
 const withSass = require('@zeit/next-sass')
 const withCss = require('@zeit/next-css')
 const nextBuildId = require('next-build-id')
-// fix: prevents error when .css files are required by node
+
+const withLess = require('@zeit/next-less')
+const lessToJS = require('less-vars-to-js')
+
+// // fix: prevents error when .css files are required by node
+// if (typeof require !== 'undefined') {
+//     require.extensions['.css'] = file => {}
+// }
+
+// Where your antd-custom.less file lives
+const themeVariables = lessToJS(
+    fs.readFileSync(path.resolve(process.cwd(), './styles/antd-custom.less'), 'utf8')
+)
+  
+// fix: prevents error when .less files are required by node
 if (typeof require !== 'undefined') {
-    require.extensions['.css'] = file => {}
+    require.extensions['.less'] = file => {}
 }
 
 const nextConfig = withCss(
     withSass(
-        withTypescript({
-            generateBuildId: async () => {
-                const fromGit = await nextBuildId({ dir: process.cwd() })
-                return fromGit.id
-            },
-            distDir:
+        withLess(
+            withTypescript({
+                lessLoaderOptions: {
+                    javascriptEnabled: true,
+                    modifyVars: themeVariables // make your antd custom effective
+                },
+                generateBuildId: async () => {
+                    const fromGit = await nextBuildId({ dir: process.cwd() })
+                    return fromGit.id
+                },
+                distDir:
                 '.build.next' +
                 (isProd
                     ? ''
@@ -41,205 +62,206 @@ const nextConfig = withCss(
                           ? process.env.NODE_ENV
                           : 'development')),
 
-            // ,assetPrefix: process.env.NODE_ENV === "production" ? 'https://cdn.mydomain.com' : ''
-            webpack(config, { isServer }) {
+                // ,assetPrefix: process.env.NODE_ENV === "production" ? 'https://cdn.mydomain.com' : ''
+                webpack(config, { isServer }) {
                 // ////
-                process.chdir(PWD)
+                    process.chdir(PWD)
 
-                // Add polyfills
-                const originalEntry = config.entry
-                config.entry = async () => {
-                    const entries = await originalEntry()
+                    // Add polyfills
+                    const originalEntry = config.entry
+                    config.entry = async () => {
+                        const entries = await originalEntry()
 
-                    if (entries['main.js']) {
-                        entries['main.js'].unshift('./config/polyfills.js')
-                    }
-
-                    return entries
-                }
-
-                // Switch React with Preact
-                if (process.env.USE_PREACT) {
-                    if (isServer) {
-                        config.externals = [
-                            'react',
-                            'react-dom',
-                            ...config.externals
-                        ]
-                    }
-
-                    config.resolve.alias = Object.assign(
-                        {},
-                        config.resolve.alias,
-                        {
-                            react$: 'preact-compat',
-                            'react-dom$': 'preact-compat',
-                            react: 'preact-compat',
-                            'react-dom': 'preact-compat'
+                        if (entries['main.js']) {
+                            entries['main.js'].unshift('./config/polyfills.js')
                         }
-                    )
-                }
 
-                // const vars = require('./config/define-vars')
+                        return entries
+                    }
 
-                // Object.keys(vars).forEach((varName)=>{
-                //     if (vars[varName]) {
-                //         vars[varName] = JSON.stringify( vars[varName] )
-                //     }else{
-                //         console.warn(`Variable '${varName}' is specified in config/expose-vars.js but value is undefined`)
-                //     }
-                // }) // parse all as string values
+                    // Switch React with Preact
+                    if (process.env.USE_PREACT) {
+                        if (isServer) {
+                            config.externals = [
+                                'react',
+                                'react-dom',
+                                ...config.externals
+                            ]
+                        }
 
-                // config.plugins.push(new webpack.DefinePlugin(require('./config/define-vars')))
+                        config.resolve.alias = Object.assign(
+                            {},
+                            config.resolve.alias,
+                            {
+                                react$: 'preact-compat',
+                                'react-dom$': 'preact-compat',
+                                react: 'preact-compat',
+                                'react-dom': 'preact-compat'
+                            }
+                        )
+                    }
 
-                try {
-                    const exposeVars = require(path.join(
-                        process.cwd(),
-                        './config/expose-vars'
-                    ))
+                    // const vars = require('./config/define-vars')
 
-                    let _extendedDefinePlugin
+                    // Object.keys(vars).forEach((varName)=>{
+                    //     if (vars[varName]) {
+                    //         vars[varName] = JSON.stringify( vars[varName] )
+                    //     }else{
+                    //         console.warn(`Variable '${varName}' is specified in config/expose-vars.js but value is undefined`)
+                    //     }
+                    // }) // parse all as string values
 
-                    const _extendDefinePluginWithEnvVars = plugin => {
+                    // config.plugins.push(new webpack.DefinePlugin(require('./config/define-vars')))
+
+                    try {
+                        const exposeVars = require(path.join(
+                            process.cwd(),
+                            './config/expose-vars'
+                        ))
+
+                        let _extendedDefinePlugin
+
+                        const _extendDefinePluginWithEnvVars = plugin => {
                         // exposeVars.forEach((exposeVar)=>{
                         //     plugin.definitions[`process.env.${exposeVar}`] = JSON.stringify(process.env[exposeVar])
                         // })
-                        if (!plugin.definitions) {
-                            plugin.definitions = {}
+                            if (!plugin.definitions) {
+                                plugin.definitions = {}
+                            }
+
+                            plugin.definitions['process'] = {
+                                browser: !isServer,
+                                isBrowser: !isServer,
+                                isServer,
+                                env: {}
+                            }
+
+                            exposeVars.forEach(exposeVar => {
+                                plugin.definitions['process']['env'][
+                                    exposeVar
+                                ] = JSON.stringify(process.env[exposeVar])
+                            })
+
+                            return plugin
                         }
 
-                        plugin.definitions['process'] = {
-                            browser: !isServer,
-                            isBrowser: !isServer,
-                            isServer,
-                            env: {}
-                        }
+                        config.plugins = config.plugins.map(plugin => {
+                            if (plugin instanceof webpack.DefinePlugin) {
+                                plugin = _extendDefinePluginWithEnvVars(plugin)
 
-                        exposeVars.forEach(exposeVar => {
-                            plugin.definitions['process']['env'][
-                                exposeVar
-                            ] = JSON.stringify(process.env[exposeVar])
+                                _extendedDefinePlugin = true
+                            }
+                            return plugin
                         })
 
-                        return plugin
-                    }
-
-                    config.plugins = config.plugins.map(plugin => {
-                        if (plugin instanceof webpack.DefinePlugin) {
-                            plugin = _extendDefinePluginWithEnvVars(plugin)
-
-                            _extendedDefinePlugin = true
+                        if (!_extendedDefinePlugin) {
+                            const definePlugin = new webpack.DefinePlugin()
+                            config.plugins.push(
+                                _extendDefinePluginWithEnvVars(definePlugin)
+                            )
                         }
-                        return plugin
-                    })
-
-                    if (!_extendedDefinePlugin) {
-                        const definePlugin = new webpack.DefinePlugin()
-                        config.plugins.push(
-                            _extendDefinePluginWithEnvVars(definePlugin)
-                        )
+                    } catch (err) {
+                        console.error('Failed to define vars')
+                        throw err
                     }
-                } catch (err) {
-                    console.error('Failed to define vars')
-                    throw err
-                }
 
-                // {
-                //     loader: 'babel-loader',
-                //     exclude: /node_modules/,
-                //     test: /\.js$/,
-                //     options: {
-                //       presets: [...]
-                //       plugins: [
-                //         ['import', { libraryName: "antd", style: true }]
-                //       ]
-                //     },
-                //   }
+                    // {
+                    //     loader: 'babel-loader',
+                    //     exclude: /node_modules/,
+                    //     test: /\.js$/,
+                    //     options: {
+                    //       presets: [...]
+                    //       plugins: [
+                    //         ['import', { libraryName: "antd", style: true }]
+                    //       ]
+                    //     },
+                    //   }
 
-                // {
-                //     test: /\.m?js$/,
-                //     exclude: /(node_modules|bower_components)/,
-                //     use: {
-                //       loader: 'babel-loader',
-                //       options: {
-                //         presets: ['@babel/preset-env'],
-                //         plugins: ['@babel/plugin-proposal-object-rest-spread']
-                //       }
-                //     }
-                //   }
+                    // {
+                    //     test: /\.m?js$/,
+                    //     exclude: /(node_modules|bower_components)/,
+                    //     use: {
+                    //       loader: 'babel-loader',
+                    //       options: {
+                    //         presets: ['@babel/preset-env'],
+                    //         plugins: ['@babel/plugin-proposal-object-rest-spread']
+                    //       }
+                    //     }
+                    //   }
 
-                // config.module.rules.push({
-                //     test: /\.js$/,
-                //     use: [
-                //         {
-                //             loader: 'babel-loader',
-                //             options: {
-                //                 exclude: '/node_modules/',
-                //                 plugins: [
-                //                     [
-                //                         '@babel/plugin-syntax-dynamic-import',
-                //                         { libraryName: 'antd', style: true }
-                //                     ]
-                //                 ]
-                //             }
-                //         }
-                //         // 'raw-loader',
-                //         // 'postcss-loader'
-                //     ]
-                // })
-                // todo: add type-checking and validation
-                // config.plugins.push(new webpack.EnvironmentPlugin(require('./config/expose-vars')))
+                    // config.module.rules.push({
+                    //     test: /\.js$/,
+                    //     use: [
+                    //         {
+                    //             loader: 'babel-loader',
+                    //             options: {
+                    //                 exclude: '/node_modules/',
+                    //                 plugins: [
+                    //                     [
+                    //                         '@babel/plugin-syntax-dynamic-import',
+                    //                         { libraryName: 'antd', style: true }
+                    //                     ]
+                    //                 ]
+                    //             }
+                    //         }
+                    //         // 'raw-loader',
+                    //         // 'postcss-loader'
+                    //     ]
+                    // })
+                    // todo: add type-checking and validation
+                    // config.plugins.push(new webpack.EnvironmentPlugin(require('./config/expose-vars')))
 
-                // console.log('config.plugins',config.plugins)
-                // Compile SASS/SCSS
-                // config.module.rules.push(
-                //     {
-                //         test: /\.(css|scss)/,
-                //         loader: 'emit-file-loader',
-                //         options: {
-                //             name: 'dist/[path][name].[ext]'
-                //         }
-                //     },
-                //     {
-                //         test: /\.css$/,
-                //         use: [ {
-                //             loader: 'babel-loader',
-                //             options: {
-                //                 exclude: '/node_modules/'
-                //             }
-                //         }, 'raw-loader', 'postcss-loader']
-                //     },
-                //     {
-                //         test: /\.s(a|c)ss$/,
-                //         use: [
-                //             {
-                //                 loader: 'babel-loader',
-                //                 options: {
-                //                     exclude: '/node_modules/'
-                //                 }
-                //             },
-                //             'raw-loader',
-                //             'postcss-loader',
-                //             {
-                //                 loader: 'sass-loader',
-                //                 options: {
-                //                     includePaths: ['styles', 'scss', 'node_modules']
-                //                         .map(d => path.join(__dirname, d))
-                //                         .map(g => glob.sync(g))
-                //                         .reduce((a, c) => a.concat(c), [])
-                //                 }
-                //             }
-                //         ]
-                //     }
-                // )
+                    // console.log('config.plugins',config.plugins)
+                    // Compile SASS/SCSS
+                    // config.module.rules.push(
+                    //     {
+                    //         test: /\.(css|scss)/,
+                    //         loader: 'emit-file-loader',
+                    //         options: {
+                    //             name: 'dist/[path][name].[ext]'
+                    //         }
+                    //     },
+                    //     {
+                    //         test: /\.css$/,
+                    //         use: [ {
+                    //             loader: 'babel-loader',
+                    //             options: {
+                    //                 exclude: '/node_modules/'
+                    //             }
+                    //         }, 'raw-loader', 'postcss-loader']
+                    //     },
+                    //     {
+                    //         test: /\.s(a|c)ss$/,
+                    //         use: [
+                    //             {
+                    //                 loader: 'babel-loader',
+                    //                 options: {
+                    //                     exclude: '/node_modules/'
+                    //                 }
+                    //             },
+                    //             'raw-loader',
+                    //             'postcss-loader',
+                    //             {
+                    //                 loader: 'sass-loader',
+                    //                 options: {
+                    //                     includePaths: ['styles', 'scss', 'node_modules']
+                    //                         .map(d => path.join(__dirname, d))
+                    //                         .map(g => glob.sync(g))
+                    //                         .reduce((a, c) => a.concat(c), [])
+                    //                 }
+                    //             }
+                    //         ]
+                    //     }
+                    // )
 
-                // if (!isProd) {
-                //     config.devtool = 'source-map'
-                // }
+                    // if (!isProd) {
+                    //     config.devtool = 'source-map'
+                    // }
 
-                return config
-            } // end webpack
-        })
+                    return config
+                } // end webpack
+            })
+        )
     )
 )
 
