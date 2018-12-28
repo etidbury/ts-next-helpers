@@ -20,8 +20,9 @@ module.exports = {
             'diagnostics': {}
         }
     },
+    // "testRegex": "(src|server)/.*\\.test\\.js$"
     'testMatch': [
-        '**/__tests__/*.+(ts|tsx|js)'
+        '**/__tests__/*\\.test\\.+(ts|tsx|js)'
     ],
     // Stop running tests after the first failure
     // bail: false,
