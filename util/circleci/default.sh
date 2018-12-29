@@ -65,7 +65,9 @@ else
 
     git checkout ${TARGET_BRANCH}
     git merge ${TMP_DEV_BRANCH}
-    
+
+    # rebuild
+    yarn build
     # kill last test
     killall node
     # test new changes
