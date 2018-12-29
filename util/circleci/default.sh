@@ -36,8 +36,8 @@ else
     git checkout ${TARGET_BRANCH} || git checkout -B ${TARGET_BRANCH}
     git reset --hard HEAD
     git fetch origin ${TARGET_BRANCH} || (git push -u origin ${TARGET_BRANCH} && echo "'${TARGET_BRANCH}' branch was created on remote")
-    git merge origin/${TARGET_BRANCH} || echo "No remote changes to merge"
-
+    git merge origin/${TARGET_BRANCH} --no-commit --no-ff || (echo 'Merge conflict found!' ; git diff --diff-filter=U ; exit 1)
+    
     # merge remote target branch into local
     git add .
     git commit -am "Merge 'origin/${TARGET_BRANCH}' into local '${TARGET_BRANCH}'" || echo "Nothing to commit"
@@ -66,7 +66,7 @@ else
 
     git checkout ${TARGET_BRANCH}
     git merge ${TMP_DEV_BRANCH}
-    
+
     git push origin ${TARGET_BRANCH}
 
     # delete tmp branch
