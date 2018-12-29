@@ -40,37 +40,33 @@ else
 
     # merge remote target branch into local
     git add .
-    git commit -am "Merge '${TARGET_BRANCH}' into local branch" || echo "Nothing to commit"
+    git commit -am "Merge 'origin/${TARGET_BRANCH}' into local '${TARGET_BRANCH}'" || echo "Nothing to commit"
 
     # Clone branch being updated with a temporary branch
-    echo "Setup temporary branch: ${TMP_DEV_BRANCH}"
+    echo "Setup temporary branch: '${TMP_DEV_BRANCH}'"
     git checkout -B ${TMP_DEV_BRANCH}
+
+    echo "Merge '${CIRCLE_BRANCH}' into '${TMP_DEV_BRANCH}'"
     git merge ${CIRCLE_BRANCH}
 
     # Initialise project
-    #yarn
-    #yarn build
+    yarn
+    yarn build
 
     # Initialise DB
     # yarn db:migrate
     # yarn db:seed
 
     # test new changes
-    #yarn test:ci
+    yarn test:ci
     
     # save new changes to target branch
     git add .
-    git commit -am "Merge new build changes (Build ${CIRCLE_BUILD_NUM})" || echo "Nothing to commit"
+    git commit -am "Merge new build changes from '${TMP_DEV_BRANCH}' (Build ${CIRCLE_BUILD_NUM})" || echo "Nothing to commit"
 
     git checkout ${TARGET_BRANCH}
     git merge ${TMP_DEV_BRANCH}
-
-    yarn 
-
-    yarn build
-    # test new changes
-    yarn test:ci
-
+    
     git push origin ${TARGET_BRANCH}
 
     # delete tmp branch
