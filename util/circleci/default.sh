@@ -65,6 +65,11 @@ else
 
     git checkout ${TARGET_BRANCH}
     git merge ${TMP_DEV_BRANCH}
+    
+    # kill last test
+    killall node
+    # test new changes
+    yarn test:ci
 
     git push origin ${TARGET_BRANCH}
 
