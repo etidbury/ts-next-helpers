@@ -48,17 +48,16 @@ else
     git merge ${CIRCLE_BRANCH}
 
     # Initialise project
-    yarn
-    yarn build
+    #yarn
+    #yarn build
 
     # Initialise DB
     # yarn db:migrate
     # yarn db:seed
 
     # test new changes
-    yarn test:ci
-
-
+    #yarn test:ci
+    
     # save new changes to target branch
     git add .
     git commit -am "Merge new build changes (Build ${CIRCLE_BUILD_NUM})" || echo "Nothing to commit"
@@ -66,10 +65,9 @@ else
     git checkout ${TARGET_BRANCH}
     git merge ${TMP_DEV_BRANCH}
 
-    # rebuild
+    yarn 
+
     yarn build
-    # kill last test
-    killall node
     # test new changes
     yarn test:ci
 
