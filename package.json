@@ -1,6 +1,6 @@
 {
   "name": "@etidbury/ts-next-helpers",
-  "version": "0.0.14",
+  "version": "0.0.21",
   "description": "Helper functions for ts-next",
   "main": "index.js",
   "scripts": {
