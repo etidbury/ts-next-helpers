@@ -1,6 +1,6 @@
 #!/bin/bash -exo pipefail
 
-echo "Deployment v0.1.3"
+echo "Deployment v0.1.4"
 
 export GITHUB_REPO_URL="https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 
@@ -50,7 +50,7 @@ else
 
             if [ -n "${SLACK_SERVICE_URL}" ]; then
                 echo "Sending merge failure message to Slack..."
-                curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"Merge failed! Run *git checkout ${CIRCLE_BRANCH} && git pull origin ${TARGET_BRANCH}* to see/resolve conflict\"}" ${SLACK_SERVICE_URL}
+                curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"Merge failed! Run *git checkout ${CIRCLE_BRANCH} && git pull origin ${TARGET_BRANCH}* to see/resolve conflict (${CIRCLE_BUILD_URL})\"}" ${SLACK_SERVICE_URL}
             fi #endif SLACK_SERVICE_URL
 
             echo "${gitMergeDiff} \nMerge conflict found. Exiting..."
