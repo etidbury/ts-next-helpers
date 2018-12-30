@@ -1,6 +1,6 @@
 #!/bin/bash -exo pipefail
 
-echo "Deployment v0.1.1"
+echo "Deployment v0.1.2"
 
 export GITHUB_REPO_URL="https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 
