@@ -27,8 +27,8 @@ const withSass = require('@zeit/next-sass')
 const withCss = require('@zeit/next-css')
 const nextBuildId = require('next-build-id')
 
-const withLess = require('@zeit/next-less')
-const lessToJS = require('less-vars-to-js')
+// const withLess = require('@zeit/next-less')
+// const lessToJS = require('less-vars-to-js')
 
 // // fix: prevents error when .css files are required by node
 // if (typeof require !== 'undefined') {
@@ -36,9 +36,9 @@ const lessToJS = require('less-vars-to-js')
 // }
 
 // Where your antd-custom.less file lives
-const themeVariables = lessToJS(
-    fs.readFileSync(path.resolve(process.cwd(), './styles/antd-custom.less'), 'utf8')
-)
+// const themeVariables = lessToJS(
+//     fs.readFileSync(path.resolve(process.cwd(), './styles/antd-custom.less'), 'utf8')
+// )
 
 // fix: prevents error when .less files are required by node
 if (typeof require !== 'undefined') {
