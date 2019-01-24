@@ -9,7 +9,8 @@ module.exports = {
     'moduleFileExtensions': [
         'ts',
         'tsx',
-        'js'
+        'js',
+        'json'
     ],
     'transform': {
         '^.+\\.(ts|tsx)$': 'ts-jest'
@@ -83,10 +84,10 @@ module.exports = {
 
     // An array of file extensions your modules use
     // moduleFileExtensions: [
-    //   "js",
-    //   "json",
-    //   "jsx",
-    //   "node"
+    //     'js',
+    //     'json',
+    //     'jsx',
+    //     'node'
     // ],
 
     // A map from regular expressions to module names that allow to stub out resources with a single module
@@ -102,7 +103,7 @@ module.exports = {
     // notifyMode: "always",
 
     // A preset that is used as a base for Jest's configuration
-    // preset: null,
+    preset: 'jest-puppeteer',
 
     // Run tests from one or more projects
     // projects: null,
@@ -137,13 +138,14 @@ module.exports = {
     // setupFiles: [],
 
     // The path to a module that runs some code to configure or set up the testing framework before each test
-    // setupTestFrameworkScriptFile: null,
+    setupTestFrameworkScriptFile: 'expect-puppeteer',
 
     // A list of paths to snapshot serializer modules Jest should use for snapshot testing
     // snapshotSerializers: [],
 
     // The test environment that will be used for testing
-    testEnvironment: 'node',
+    // testEnvironment: 'node',
+    testEnvironment: 'jest-environment-puppeteer',
 
     // Options that will be passed to the testEnvironment
     // testEnvironmentOptions: {},
