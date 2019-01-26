@@ -1,6 +1,6 @@
 {
   "name": "@etidbury/ts-next-helpers",
-  "version": "0.0.25",
+  "version": "0.0.27",
   "description": "Helper functions for ts-next",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "@zeit/next-sass": "^1.0.1",
     "@zeit/next-typescript": "^1.1.1",
     "autoprefixer": "^9.4.3",
+    "aws-sdk": "^2.395.0",
     "babel-plugin-import": "^1.11.0",
     "cors": "^2.8.4",
     "dotenv": "^6.1.0",
