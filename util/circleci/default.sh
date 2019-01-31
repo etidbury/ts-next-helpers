@@ -130,7 +130,7 @@ else
 
     echo "Zeit Now Deploying '${NOW_ALIAS}'..."
 
-    export NOW_TEMP_URL=$(now --token "${NOW_TOKEN}" --dotenv .env --team "${NOW_TEAM}")
+    export NOW_TEMP_URL=$(now --token "${NOW_TOKEN}" --team "${NOW_TEAM}")
 
     echo "Zeit Now Aliasing '${NOW_TEMP_URL}' to '${NOW_ALIAS}'"
 
