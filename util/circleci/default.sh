@@ -120,6 +120,11 @@ else
     # Debug env vars
     cat .env
 
+    # rewrite now.json with env vars (note: this also deletes reserved env vars)
+    node ./node_modules/@etidbury/ts-next-helpers/util/env-to-now-json.js
+
+    # Debug now.json
+    cat now.json
     # Debug files and permissions
     ls -la
 
