@@ -1,6 +1,6 @@
 #!/bin/bash -exo pipefail
 
-echo "Deployment v0.1.4"
+echo "Deployment v0.0.31"
 
 export GITHUB_REPO_URL="https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 
@@ -127,6 +127,9 @@ else
     cat now.json
     # Debug files and permissions
     ls -la
+
+    # Debug total size
+    du -hs
 
     echo "Zeit Now Deploying '${NOW_ALIAS}'..."
 
