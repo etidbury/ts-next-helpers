@@ -1,6 +1,6 @@
 #!/bin/bash -exo pipefail
 
-echo "Deployment v0.0.31"
+echo "Deployment v0.0.38"
 
 export GITHUB_REPO_URL="https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 
@@ -74,7 +74,7 @@ else
     git merge ${CIRCLE_BRANCH}
 
     # Initialise project
-    yarn
+    yarn install --frozen-lockfile
     yarn build
 
     # Initialise DB
@@ -129,6 +129,14 @@ else
     ls -la
 
     # Debug total size
+    du -hs
+
+
+    #Reset pkgs to reduce size
+    rm -rf node_modules
+    yarn --prod --frozen-lockfile
+
+    # Debug total size after reducing size
     du -hs
 
     echo "Zeit Now Deploying '${NOW_ALIAS}'..."

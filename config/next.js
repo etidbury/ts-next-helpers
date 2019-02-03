@@ -61,10 +61,10 @@ const nextConfig =
                 //     javascriptEnabled: true,
                 //     modifyVars: themeVariables // make your antd custom effective
                 // },
-                generateBuildId: async () => {
-                    const fromGit = await nextBuildId({ dir: process.cwd() })
-                    return fromGit.id
-                },
+                // generateBuildId: async () => {
+                //     const fromGit = await nextBuildId({ dir: process.cwd() })
+                //     return fromGit.id
+                // },
                 distDir:
                     '.build.next' +
                     (isProd

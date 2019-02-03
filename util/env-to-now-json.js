@@ -19,6 +19,9 @@ if (typeof nowJson.env !== 'object'){
     delete process.env[envName]
 })
 
+// Enforce Host is set to 0.0.0.0 for Zeit Now
+process.env.HOST = '0.0.0.0'
+
 nowJson.env = Object.assign(nowJson.env,process.env)
 
 fs.writeFileSync(NOW_JSON_FILE_PATH,JSON.stringify(nowJson,null, 4))
