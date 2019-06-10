@@ -10,7 +10,8 @@ const fs = require('fs')
 require('dotenv-safe').config({
     path: path.join(process.cwd(), '.env'),
     safe: true,
-    debug: process.env.DEBUG
+    debug: process.env.DEBUG,
+    allowEmptyValues: true
 })
 const webpack = require('webpack')
 
@@ -52,6 +53,7 @@ const nextConfig =
     withSass(
         withCss(
             withTypescript({
+                target: 'serverless',
                 // cssModules: true,
                 // sassLoaderOptions: {},
                 // typescriptLoaderOptions: {
@@ -65,11 +67,10 @@ const nextConfig =
                 //     const fromGit = await nextBuildId({ dir: process.cwd() })
                 //     return fromGit.id
                 // },
-                distDir:
-                    '.build.next' +
+                'distDir':
                     (isProd
-                        ? ''
-                        : '.' +
+                        ? '.next'
+                        : '.build.next.' +
                         (process.env.NODE_ENV
                             ? process.env.NODE_ENV
                             : 'development')),
@@ -84,7 +85,7 @@ const nextConfig =
                     config.entry = async () => {
                         const entries = await originalEntry()
 
-                        if (entries['main.js']) {
+                        if (entries['main.js'] && !entries['main.js'].includes('./config/polyfills.js') ) {
                             entries['main.js'].unshift('./config/polyfills.js')
                         }
 
