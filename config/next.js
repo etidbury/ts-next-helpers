@@ -7,13 +7,12 @@
 const path = require('path')
 const fs = require('fs')
 
-require('dotenv-safe').config({
+require('dotenv').config({
     path: path.join(process.cwd(), '.env'),
     safe: true,
     debug: process.env.DEBUG,
     allowEmptyValues: true
 })
-const webpack = require('webpack')
 
 const { PWD } = process.env
 
@@ -23,7 +22,7 @@ const glob = require('glob')
 
 const isProd = process.env.NODE_ENV === 'production'
 
-const withTypescript = require('@zeit/next-typescript')
+// const withTypescript = require('@zeit/next-typescript')
 const withSass = require('@zeit/next-sass')
 const withCss = require('@zeit/next-css')
 const nextBuildId = require('next-build-id')
@@ -52,7 +51,7 @@ const nextConfig =
     // withLess(
     withSass(
         withCss(
-            withTypescript({
+            {
                 target: 'serverless',
                 // cssModules: true,
                 // sassLoaderOptions: {},
@@ -125,59 +124,7 @@ const nextConfig =
                     // }) // parse all as string values
 
                     // config.plugins.push(new webpack.DefinePlugin(require('./config/define-vars')))
-
-                    try {
-                        const exposeVars = require(path.join(
-                            process.cwd(),
-                            './config/expose-vars'
-                        ))
-
-                        let _extendedDefinePlugin
-
-                        const _extendDefinePluginWithEnvVars = plugin => {
-                            // exposeVars.forEach((exposeVar)=>{
-                            //     plugin.definitions[`process.env.${exposeVar}`] = JSON.stringify(process.env[exposeVar])
-                            // })
-                            if (!plugin.definitions) {
-                                plugin.definitions = {}
-                            }
-
-                            plugin.definitions['process'] = {
-                                browser: !isServer,
-                                isBrowser: !isServer,
-                                isServer,
-                                env: {}
-                            }
-
-                            exposeVars.forEach(exposeVar => {
-                                plugin.definitions['process']['env'][
-                                    exposeVar
-                                ] = JSON.stringify(process.env[exposeVar])
-                            })
-
-                            return plugin
-                        }
-
-                        config.plugins = config.plugins.map(plugin => {
-                            if (plugin instanceof webpack.DefinePlugin) {
-                                plugin = _extendDefinePluginWithEnvVars(plugin)
-
-                                _extendedDefinePlugin = true
-                            }
-                            return plugin
-                        })
-
-                        if (!_extendedDefinePlugin) {
-                            const definePlugin = new webpack.DefinePlugin()
-                            config.plugins.push(
-                                _extendDefinePluginWithEnvVars(definePlugin)
-                            )
-                        }
-                    } catch (err) {
-                        console.error('Failed to define vars')
-                        throw err
-                    }
-
+                   
                     // {
                     //     loader: 'babel-loader',
                     //     exclude: /node_modules/,
@@ -233,10 +180,38 @@ const nextConfig =
                     return config
                 } // end webpack
             })
-        )
+        
     )
 //  )
 
 module.exports = () => {
+
+    try {
+        const exposeVars = require(path.join(
+            process.cwd(),
+            './config/expose-vars'
+        ))
+
+        if (!nextConfig.env){
+            nextConfig.env = {}
+        }
+
+        exposeVars.forEach(exposeVar => {
+
+            if (exposeVar.indexOf('?') <= -1 && (!process.env[exposeVar] || !process.env[exposeVar].length)){
+                throw new TypeError(`An environment variable specified to be exposed is undefined: '${exposeVar}' (use '?' in environment name to ignore)`)
+            }
+
+            nextConfig.env[
+                exposeVar
+            ] = JSON.stringify(process.env[exposeVar])
+          
+        })
+        
+    } catch (err) {
+        console.error('Failed to expose environment variables')
+        throw err
+    }
+    
     return nextConfig
 }
