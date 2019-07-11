@@ -1,7 +1,6 @@
 module.exports = {
     'presets': [
-        'next/babel',
-        '@zeit/next-typescript/babel'
+        'next/babel'
     ],
     // 'plugins': [
     //     '@babel/plugin-proposal-class-properties',
