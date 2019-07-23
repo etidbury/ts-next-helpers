@@ -1,6 +1,6 @@
 #!/bin/bash -exo pipefail
 
-echo "Deployment v0.3.1"
+echo "Deployment v0.3.4"
 
 export GITHUB_REPO_URL="https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 
@@ -73,6 +73,7 @@ else
     echo "Merge '${CIRCLE_BRANCH}' into '${TMP_DEV_BRANCH}'"
     git merge ${CIRCLE_BRANCH}
 
+   
 
     # Initialise project
     yarn install --frozen-lockfile
@@ -81,7 +82,7 @@ else
     # rewrite now.json with env vars (note: this also deletes reserved env vars)
     #node ./node_modules/@etidbury/ts-gql-helpers/util/env-to-now-json.js
 
-    node ./node_modules/@etidbury/ts-gql-helpers/util/prepend-env-vars-build.js
+    #node ./node_modules/@etidbury/ts-gql-helpers/util/prepend-env-vars-build.js
 
     # Debug now.json
     #cat now.json
@@ -92,10 +93,19 @@ else
     # yarn db:migrate
     # yarn db:seed
 
-
+    yarn add puppeteer
+    
+    # #hotfix
+    # export NODE_PATH=$(yarn global dir)
 
     # test new changes
     yarn test:ci
+
+
+    #ignore changes made by 'yarn add puppeteer'
+    git checkout HEAD -- yarn.lock
+    git checkout HEAD -- package.json
+
 
     # save new changes to target branch
     git add .
@@ -162,6 +172,8 @@ else
 
 
     #node ./node_modules/@etidbury/ts-gql-helpers/util/prepend-env-vars-build.js
+
+    node ./node_modules/@etidbury/ts-next-helpers/util/update-alias-now-json.js
 
     echo "Zeit Now Deploying..."
 
