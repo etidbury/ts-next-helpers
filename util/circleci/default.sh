@@ -1,8 +1,15 @@
 #!/bin/bash -exo pipefail
 
-echo "Deployment v0.3.4"
+echo "Deployment v0.3.5"
 
 export GITHUB_REPO_URL="https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
+
+cd ../
+mv ./project ./${CIRCLE_PROJECT_REPONAME}
+cd ./${CIRCLE_PROJECT_REPONAME}
+
+echo "New working directory:"
+pwd
 
 if [ "${CIRCLE_BRANCH}" == "development" ]; then
 
@@ -146,7 +153,7 @@ else
 
 
     # rewrite now.json with env vars (note: this also deletes reserved env vars)
-    #node ./node_modules/@etidbury/ts-gql-helpers/util/env-to-now-json.js
+    node ./node_modules/@etidbury/ts-next-helpers/util/env-to-now-json.js
 
     # Debug now.json
     #cat now.json
