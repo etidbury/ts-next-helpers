@@ -179,12 +179,12 @@ else
 
 
     #export NOW_TEMP_URL=$(now --token "${NOW_TOKEN}" --scope "${NOW_TEAM}")
-    export NOW_TEMP_URL=$(now --token "${NOW_TOKEN}" --scope "${NOW_TEAM}" --target production)
+    now --token "${NOW_TOKEN}" --scope "${NOW_TEAM}" --target production
 
-    if [ -z "${NOW_TEMP_URL}" ]; then
-        echo "Failed to deploy"
-        exit 1
-    fi
+    # if [ -z "${NOW_TEMP_URL}" ]; then
+    #     echo "Failed to deploy"
+    #     exit 1
+    # fi
     # echo "Zeit Now Aliasing '${NOW_TEMP_URL}' to '${NOW_ALIAS}'"
 
     # now alias "${NOW_TEMP_URL}" "${NOW_ALIAS}" --token "${NOW_TOKEN}" --scope "${NOW_TEAM}"
