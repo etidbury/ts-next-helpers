@@ -8,7 +8,7 @@ const path = require('path')
 const fs = require('fs')
 
 require('dotenv').config({
-    path: path.join(process.cwd(), '.env'),
+    path: path.join(process.cwd(), process.env.ENV_FILE ? process.env.ENV_FILE : '.env'),
     safe: true,
     debug: process.env.DEBUG,
     allowEmptyValues: true
@@ -25,7 +25,7 @@ const isProd = process.env.NODE_ENV === 'production'
 // const withTypescript = require('@zeit/next-typescript')
 const withSass = require('@zeit/next-sass')
 const withCss = require('@zeit/next-css')
-const nextBuildId = require('next-build-id')
+// const nextBuildId = require('next-build-id')
 
 // const withLess = require('@zeit/next-less')
 // const lessToJS = require('less-vars-to-js')
