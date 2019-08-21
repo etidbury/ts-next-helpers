@@ -84,7 +84,7 @@ const nextConfig =
                     config.entry = async () => {
                         const entries = await originalEntry()
 
-                        if (entries['main.js'] && !entries['main.js'].includes('./config/polyfills.js') ) {
+                        if (entries['main.js'] && !entries['main.js'].includes('./config/polyfills.js')) {
                             entries['main.js'].unshift('./config/polyfills.js')
                         }
 
@@ -124,7 +124,7 @@ const nextConfig =
                     // }) // parse all as string values
 
                     // config.plugins.push(new webpack.DefinePlugin(require('./config/define-vars')))
-                   
+
                     // {
                     //     loader: 'babel-loader',
                     //     exclude: /node_modules/,
@@ -180,7 +180,7 @@ const nextConfig =
                     return config
                 } // end webpack
             })
-        
+
     )
 //  )
 
@@ -192,26 +192,31 @@ module.exports = () => {
             './config/expose-vars'
         ))
 
-        if (!nextConfig.env){
+        if (!nextConfig.env) {
             nextConfig.env = {}
         }
 
         exposeVars.forEach(exposeVar => {
 
-            if (exposeVar.indexOf('?') <= -1 && (!process.env[exposeVar] || !process.env[exposeVar].length)){
+            if (exposeVar.indexOf('?') <= -1 && (!process.env[exposeVar] || !process.env[exposeVar].length)) {
                 throw new TypeError(`An environment variable specified to be exposed is undefined: '${exposeVar}' (use '?' in environment name to ignore)`)
             }
 
+            let exposedVarVal = JSON.stringify(process.env[exposeVar])
+
+            //trim double-quotes possibly added by JSON.stringify
+            exposedVarVal = exposedVarVal && exposedVarVal[0] === '"' && exposedVarVal[exposedVarVal.length - 1] === '"' ? exposedVarVal.substr(1).slice(0, -1) : exposedVarVal
+
             nextConfig.env[
                 exposeVar
-            ] = JSON.stringify(process.env[exposeVar])
-          
+            ] = exposedVarVal
+
         })
-        
+
     } catch (err) {
         console.error('Failed to expose environment variables')
         throw err
     }
-    
+
     return nextConfig
 }
