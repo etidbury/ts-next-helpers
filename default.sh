@@ -8,12 +8,16 @@ echo "Deployment v0.4.0"
 
 export GITHUB_REPO_URL="https://${GITHUB_TOKEN}@github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 
+
 cd ../
 mv ./project ./${CIRCLE_PROJECT_REPONAME}
 cd ./${CIRCLE_PROJECT_REPONAME}
 
 echo "New working directory:"
 pwd
+
+
+
 
 if [ "${CIRCLE_BRANCH}" == "development" ]; then
 
@@ -48,8 +52,6 @@ else
     git reset --hard HEAD
     git fetch origin ${TARGET_BRANCH} || (git push -u origin ${TARGET_BRANCH} && echo "'${TARGET_BRANCH}' branch was created on remote")
     
-
-
     # line_count=$(git diff origin/${TARGET_BRANCH}..${CIRCLE_BRANCH} | wc -l)
 
     # # check if theres changes between target branch and current branch
@@ -75,7 +77,10 @@ else
     #     git add .
     #     git commit -am "Merge 'origin/${TARGET_BRANCH}' into local '${TARGET_BRANCH}'" || echo "Nothing to commit"
 
+
     # fi
+    
+    
     
     # make merge commit but without conflicts!!
     # the contents of 'ours' will be discarded later
@@ -99,10 +104,11 @@ else
     yarn install --frozen-lockfile --production=false
     yarn build
 
+
     # rewrite now.json with env vars (note: this also deletes reserved env vars)
     #node ./node_modules/@etidbury/ts-gql-helpers/util/env-to-now-json.js
 
-    #node ./node_modules/@etidbury/ts-gql-helpers/util/prepend-env-vars-build.js
+    node ./node_modules/@etidbury/ts-gql-helpers/util/prepend-env-vars-build.js
 
     # Debug now.json
     #cat now.json
@@ -113,19 +119,14 @@ else
     # yarn db:migrate
     # yarn db:seed
 
-    yarn add puppeteer
-    
-    # #hotfix
-    # export NODE_PATH=$(yarn global dir)
+    yarn add @types/jest
 
     # test new changes
     yarn test:ci
 
-
-    #ignore changes made by 'yarn add puppeteer'
+    #ignore pkg changes
     git checkout HEAD -- yarn.lock
     git checkout HEAD -- package.json
-
 
     # save new changes to target branch
     git add .
@@ -167,7 +168,7 @@ else
 
 
     # rewrite now.json with env vars (note: this also deletes reserved env vars)
-    node ./node_modules/@etidbury/ts-next-helpers/util/env-to-now-json.js
+    #node ./node_modules/@etidbury/ts-gql-helpers/util/env-to-now-json.js
 
     # Debug now.json
     #cat now.json
@@ -184,28 +185,24 @@ else
     # yarn --prod --frozen-lockfile
 
     # Debug total size after reducing size
-    du -hs
+    #du -hs
 
 
     # Re-initialise project
-    #yarn install --frozen-lockfile
-    #yarn build
+    yarn install --frozen-lockfile
+    yarn build
 
+    node ./node_modules/@etidbury/ts-gql-helpers/util/prepend-env-vars-build.js
 
-    #node ./node_modules/@etidbury/ts-gql-helpers/util/prepend-env-vars-build.js
-
-    node ./node_modules/@etidbury/ts-next-helpers/util/update-alias-now-json.js
-
-    echo "----now.json----"
-    cat now.json
-    echo "----/now.json----"
+    node ./node_modules/@etidbury/ts-gql-helpers/util/update-alias-now-json.js
 
     echo "Zeit Now Deploying..."
 
 
     #export NOW_TEMP_URL=$(now --token "${NOW_TOKEN}" --scope "${NOW_TEAM}")
-    now --token "${NOW_TOKEN}" --scope "${NOW_TEAM}" --target production
+    # export NOW_TEMP_URL=$(now --token "${NOW_TOKEN}" --scope "${NOW_TEAM}" --target production)
 
+    now --token "${NOW_TOKEN}" --scope "${NOW_TEAM}" --target production
     # if [ -z "${NOW_TEMP_URL}" ]; then
     #     echo "Failed to deploy"
     #     exit 1
