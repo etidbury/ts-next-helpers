@@ -201,14 +201,15 @@ module.exports = () => {
             if (exposeVar.indexOf('?') <= -1 && (!process.env[exposeVar] || !process.env[exposeVar].length)) {
                 throw new TypeError(`An environment variable specified to be exposed is undefined: '${exposeVar}' (use '?' in environment name to ignore)`)
             }
+            const exposedVarName = exposeVar.replace('?', '')
 
-            let exposedVarVal = JSON.stringify(process.env[exposeVar])
+            let exposedVarVal = JSON.stringify(process.env[exposedVarName])
 
             //trim double-quotes possibly added by JSON.stringify
             exposedVarVal = exposedVarVal && exposedVarVal[0] === '"' && exposedVarVal[exposedVarVal.length - 1] === '"' ? exposedVarVal.substr(1).slice(0, -1) : exposedVarVal
 
             nextConfig.env[
-                exposeVar
+                exposedVarName
             ] = exposedVarVal
 
         })
